@@ -53,7 +53,7 @@ func runPinger(cnt *int) {
 }
 
 func postToSlack() {
-	url := "https://hooks.slack.com/services/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"
+	url := ""
 
 	var jsonStr = []byte(`
 		{"text":"Hello! My name is Pong. The friendly monitoring App"}

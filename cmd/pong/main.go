@@ -8,8 +8,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 //go:embed templates/*
@@ -17,11 +18,17 @@ var resources embed.FS
 
 var t = template.Must(template.ParseFS(resources, "templates/*"))
 
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+//Config service configuration
+type Config struct {
+	SlackWebhookUrl string `envconfig:"SLACK_WEBHOOK_URL" required:true"`
+	Port            string `envconfig:"PORT" default:"8080"`
+}
 
+func main() {
+	conf := Config{}
+	if cErr := envconfig.Process("", &conf); cErr != nil {
+		fmt.Println(cErr)
+		panic("failed to load service config")
 	}
 
 	counter := 0
@@ -37,8 +44,8 @@ func main() {
 		t.ExecuteTemplate(w, "index.html.tmpl", data)
 	})
 
-	log.Println("listening on", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Println("listening on", conf.Port)
+	log.Fatal(http.ListenAndServe(":"+conf.Port, nil))
 }
 
 func runPinger(cnt *int) {
@@ -53,7 +60,7 @@ func runPinger(cnt *int) {
 }
 
 func postToSlack() {
-	url := ""
+	url := "https://hooks.slack.com/services/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"
 
 	var jsonStr = []byte(`
 		{"text":"Hello! My name is Pong. The friendly monitoring App"}
